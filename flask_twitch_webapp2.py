@@ -369,7 +369,9 @@ def stop_bot():
 
 @app.route('/bot_logs')
 def bot_logs():
-    return render_template("bot_logs.html")
+    
+    existing_files = sorted(os.listdir(DB_FOLDER), reverse=True)
+    return render_template("bot_logs.html", files=existing_files)
 
 # @app.route('/start_bot', methods=["POST"])
 # def start_bot():

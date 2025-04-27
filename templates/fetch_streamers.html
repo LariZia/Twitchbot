@@ -10,7 +10,7 @@
 <body>
     <div class="container mt-5">
         <h2>Fetch Twitch Streamers</h2>
-        <form id="fetchForm" novalidate>
+        <form id="fetchForm">
             <div class="mb-3">
                 <label for="language">Language</label>
                 <select name="language" class="form-control" id="language" required>
@@ -76,7 +76,7 @@
 
             <div class="mb-3">
                 <label for="tags_filter">Tags</label>
-                <input type="text" name="tags_filter" class="form-control" id="tags_filter" placeholder="Enter tags, separated by commas" >
+                <input type="text" name="tags_filter" class="form-control" id="tags_filter" placeholder="Enter tags, separated by commas">
             </div>
 
             <button type="submit" class="btn btn-primary">Start Fetching</button>
@@ -108,21 +108,37 @@
 
     <script>
         var socket = io();
- 
+        
+        document.addEventListener('DOMContentLoaded', () => {
+        const form       = document.getElementById('fetchForm');
+        const gameField  = document.getElementById('game_filter');
+        const tagsField  = document.getElementById('tags_filter');
 
+        function updateRequiredAttrs() {
+        // if game has text, tags NOT required; otherwise tags IS required
+        if (gameField.value.trim().length) {
+            tagsField.removeAttribute('required');
+        } else {
+            tagsField.setAttribute('required', 'required');
+        }
+        // mirror logic for game field
+        if (tagsField.value.trim().length) {
+            gameField.removeAttribute('required');
+        } else {
+            gameField.setAttribute('required', 'required');
+        }
+        }
+
+        // run on every keystroke / paste
+        gameField.addEventListener('input',  updateRequiredAttrs);
+        tagsField.addEventListener('input', updateRequiredAttrs);
+
+        // initialize on load
+        updateRequiredAttrs();
 
         document.getElementById("fetchForm").addEventListener("submit", function(event) {
             event.preventDefault();
-            const game = document.getElementById('game_filter').value.trim();
-            const tags = document.getElementById('tags_filter').value.trim();
-
-            if (!game && !tags) {
-            
-            alert('Please enter either a Game name or one or more Tags.');
-
-            event.preventDefault();
             var formData = new FormData(event.target);
-            }
 
             fetch("/fetch_streamers", {
                 method: "POST",
@@ -164,6 +180,7 @@
         document.getElementById("updatePrompts").addEventListener("click", function() {
             window.location.href = "/update_prompts";
         });
+    });
         
     </script>
 

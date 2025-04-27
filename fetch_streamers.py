@@ -95,7 +95,7 @@ CSV_FILE  = f"static/streamers_{timestamp}.csv"
 #         writer = csv.writer(file)
 #         writer.writerow(["Timestamp", "Streamer", "Viewers", "Game", "Tags"])
 
-def fetch_streamers(language='en', tags=None,game_filter=0, max_viewers=50, limit=10000, max_pages=100, retry_delay=2, log_count=10):
+def fetch_streamers(language='en', tags=None,game_filter='', max_viewers=50, limit=10000, max_pages=100, retry_delay=2, log_count=10):
     """
     Fetches Twitch streamers with pagination, filtering by viewer count, language, and tags,
     and logs them into a CSV file.
@@ -134,26 +134,29 @@ def fetch_streamers(language='en', tags=None,game_filter=0, max_viewers=50, limi
 
         filtered_streams = []
         for stream in streams:
-            if stream["viewer_count"] >= max_viewers:
-                continue
-            if language and stream.get("language") != language:
-                continue
+            if (stream["viewer_count"] < max_viewers and stream.get("language") == language):
+            #     continue
+            # if language and stream.get("language") != language:
+            #     continue
             # game filter takes priority over tags
-            if game_filter:
-                game_id = stream.get("game_id", "").strip()
-                if game_id.lower() not in int(game_filter):
-                    logging.debug(f"Skipping {stream['user_name']} - game '{game_id}' doesn't match filter '{game_filter}'")
-                    continue
-            elif tags:
-                stream_tags = stream.get("tags", []) or []
-                if not all(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
-                    continue
+                if game_filter:
+                    game_name = stream.get("game_name", "").strip()
+                    if game_name.lower() in game_filter:
+                        filtered_streams.append(stream)
+                        # logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
+                        
+                elif tags:
+                    stream_tags = stream.get("tags", []) or []
+                    if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
+                        filtered_streams.append(stream)
+            else:
+                continue
             # if tags:
             #     stream_tags = stream.get("tags", []) or []
             #     if not all(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
             #         continue
             
-            filtered_streams.append(stream)
+            # filtered_streams.append(stream)
             if below_threshold_count < log_count:
                 try:
                     CSV_HEADERS = [

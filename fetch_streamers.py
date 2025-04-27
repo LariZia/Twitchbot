@@ -140,7 +140,7 @@ def fetch_streamers(language='en', tags=None,game_filter="", max_viewers=50, lim
                 continue
             # game filter takes priority over tags
             if game_filter:
-                if stream["game_name"].lower() != game_filter.lower():
+                 if stream.get("game_name", "").lower() != game_filter.lower():
                     continue
             elif tags:
                 stream_tags = stream.get("tags", []) or []

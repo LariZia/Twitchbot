@@ -95,7 +95,7 @@ CSV_FILE  = f"static/streamers_{timestamp}.csv"
 #         writer = csv.writer(file)
 #         writer.writerow(["Timestamp", "Streamer", "Viewers", "Game", "Tags"])
 
-def fetch_streamers(language='en', tags=None,game_filter='', max_viewers=50, limit=10000, max_pages=100, retry_delay=2, log_count=10):
+def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, limit=10000, max_pages=100, retry_delay=2, log_count=10):
     """
     Fetches Twitch streamers with pagination, filtering by viewer count, language, and tags,
     and logs them into a CSV file.
@@ -135,18 +135,24 @@ def fetch_streamers(language='en', tags=None,game_filter='', max_viewers=50, lim
         filtered_streams = []
         for stream in streams:
             if (stream["viewer_count"] < max_viewers and stream.get("language") == language):
+                socketio.emit("log_update", {"log": "in if streame"})
             #     continue
             # if language and stream.get("language") != language:
             #     continue
             # game filter takes priority over tags
                 if game_filter:
-                    game_name = stream.get("game_name", "").strip()
-                    if game_name.lower() in game_filter:
+
+                    game_name = stream.get("game_name").strip()
+                    socketio.emit("log_update", {"log":f"in if streame games {game_name}, {game_filter}"})
+
+                    if game_name.lower() in game_filter.lower():
                         filtered_streams.append(stream)
                         # logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
                         
                 elif tags:
-                    stream_tags = stream.get("tags", []) or []
+                    stream_tags = stream.get("tags") or []
+                    socketio.emit("log_update", {"log": f"in if streame tags {stream_tags}"})
+
                     if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
                         filtered_streams.append(stream)
             else:
@@ -199,7 +205,7 @@ def fetch_streamers(language='en', tags=None,game_filter='', max_viewers=50, lim
                     below_threshold_count += 1
                     
                     # Emit log update
-                    log_message = f"Logged: {streamer_name} - {viewer_count} viewers - {game_name}"
+                    log_message = f"Logged: {streamer_name} - {viewer_count} viewers - {game_name} - tags {stream_tags}"
                     logging.info(log_message)
                     socketio.emit("log_update", {"log": log_message})
 

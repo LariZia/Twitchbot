@@ -237,6 +237,7 @@ def fetch_streamers():
         language = request.form["language"]
         max_viewers = int(request.form["max_viewers"])
         log_count = int(request.form["log_count"])
+        game_filter = request.form["game_filter"]
         tags_filter = request.form["tags_filter"]
         
         # Convert the comma-separated tags string into a list
@@ -256,7 +257,7 @@ def fetch_streamers():
                                   "First Message Timestamp", "First Reply", "First Reply Timestamp", "Second Message Sent",
                                   "Second Reply", "Second Reply Timestamp", "Socials", "Abandoned", "Timeout"])
         
-        thread = threading.Thread(target=run_fetch_script, args=(language, max_viewers, log_count, tags_list, output_file))
+        thread = threading.Thread(target=run_fetch_script, args=(language, tags_list, game_filter, max_viewers, log_count,  output_file))
         thread.start()
         return jsonify({"message": "Fetching started...", "output_file": output_file})
     

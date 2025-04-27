@@ -154,7 +154,10 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
                     socketio.emit("log_update", {"log": f"in if streame tags {stream_tags}, tags input {tags}"})
 
                     if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
+                        socketio.emit("log_update", {"log":f"conidition --> {any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags)}"})
                         filtered_streams.append(stream)
+                    else: 
+                        continue 
             else:
                 continue
             # if tags:

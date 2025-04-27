@@ -218,11 +218,11 @@ def configure():
     return render_template("configure.html", config=config)
 
 
-def run_fetch_script(language, max_viewers, log_count, tags_list, output_file):
+def run_fetch_script(language, max_viewers, log_count, tags_list,game_filter, output_file):
     """Runs the fetching script and sends logs to the frontend in real-time."""
     command = ["python", "fetch_streamers.py", "--language", language, 
                "--max_viewers", str(max_viewers), "--log_count", str(log_count),
-               "--tags_filter", ",".join(tags_list)]
+               "--tags_filter", ",".join(tags_list), "--game",game_filter]
 
     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
         for line in process.stdout:
@@ -257,7 +257,7 @@ def fetch_streamers():
                                   "First Message Timestamp", "First Reply", "First Reply Timestamp", "Second Message Sent",
                                   "Second Reply", "Second Reply Timestamp", "Socials", "Abandoned", "Timeout"])
         
-        thread = threading.Thread(target=run_fetch_script, args=(language, tags_list, game_filter, max_viewers, log_count,  output_file))
+        thread = threading.Thread(target=run_fetch_script, args=(language, max_viewers, log_count, game_filter, output_file))
         thread.start()
         return jsonify({"message": "Fetching started...", "output_file": output_file})
     

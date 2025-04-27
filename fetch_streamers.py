@@ -22,6 +22,7 @@ socketio = SocketIO(message_queue=redis_url, async_mode="eventlet")  # Ensure Re
 parser = argparse.ArgumentParser(description="Fetch Twitch streamers and log their details.")
 parser.add_argument("--language", type=str, default="en", help="Language filter for streamers")
 parser.add_argument("--tags_filter", type=str, default="", help="Comma-separated list of tags to filter by")
+parser.add_argument("--game",       type=str, default="", help="Game name to filter by (takes priority over tags)")
 parser.add_argument("--max_viewers", type=int, default=50, help="Maximum number of viewers a streamer can have")
 parser.add_argument("--limit", type=int, default=100, help="Number of streamers to fetch per request")
 parser.add_argument("--max_pages", type=int, default=100, help="Maximum number of pagination requests")
@@ -32,6 +33,7 @@ args = parser.parse_args()
 
 # Convert tags_filter from comma-separated string to list
 tags_list = args.tags_filter.split(",") if args.tags_filter else []
+game_filter = args.game.strip().lower() if args.game else ''
 
 # CSV file to log the details
 def get_latest_timestamp():
@@ -93,7 +95,7 @@ CSV_FILE  = f"static/streamers_{timestamp}.csv"
 #         writer = csv.writer(file)
 #         writer.writerow(["Timestamp", "Streamer", "Viewers", "Game", "Tags"])
 
-def fetch_streamers(language='en', tags=None, max_viewers=50, limit=10000, max_pages=100, retry_delay=2, log_count=10):
+def fetch_streamers(language='en', tags=None,game_filter="", max_viewers=50, limit=10000, max_pages=100, retry_delay=2, log_count=10):
     """
     Fetches Twitch streamers with pagination, filtering by viewer count, language, and tags,
     and logs them into a CSV file.
@@ -136,10 +138,18 @@ def fetch_streamers(language='en', tags=None, max_viewers=50, limit=10000, max_p
                 continue
             if language and stream.get("language") != language:
                 continue
-            if tags:
+            # game filter takes priority over tags
+            if game_filter:
+                if stream["game_name"].lower() != game_filter.lower():
+                    continue
+            elif tags:
                 stream_tags = stream.get("tags", []) or []
                 if not all(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
                     continue
+            # if tags:
+            #     stream_tags = stream.get("tags", []) or []
+            #     if not all(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
+            #         continue
             
             filtered_streams.append(stream)
             if below_threshold_count < log_count:
@@ -236,6 +246,7 @@ def fetch_streamers(language='en', tags=None, max_viewers=50, limit=10000, max_p
 streamers = fetch_streamers(
     language=args.language,
     tags=tags_list,
+    game_filter=game_filter,
     max_viewers=args.max_viewers,
     limit=args.limit,
     max_pages=args.max_pages,

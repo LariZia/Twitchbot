@@ -70,6 +70,11 @@
             </div>
 
             <div class="mb-3">
+                <label for="game_filter">Tags</label>
+                <input type="text" name="game_filter" class="form-control" id="game_filter" placeholder="Enter game name" required>
+            </div>
+
+            <div class="mb-3">
                 <label for="tags_filter">Tags</label>
                 <input type="text" name="tags_filter" class="form-control" id="tags_filter" placeholder="Enter tags, separated by commas" required>
             </div>
@@ -103,6 +108,17 @@
 
     <script>
         var socket = io();
+
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            const game = document.getElementById('game_filter').value.trim();
+            const tags = document.getElementById('tags_filter').value.trim();
+
+            if (!game && !tags) {
+            e.preventDefault();
+            alert('Please enter either a Game name or one or more Tags.');
+            }
+        });
+
 
         document.getElementById("fetchForm").addEventListener("submit", function(event) {
             event.preventDefault();

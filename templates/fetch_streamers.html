@@ -10,7 +10,7 @@
 <body>
     <div class="container mt-5">
         <h2>Fetch Twitch Streamers</h2>
-        <form id="fetchForm">
+        <form id="fetchForm" novalidate>
             <div class="mb-3">
                 <label for="language">Language</label>
                 <select name="language" class="form-control" id="language" required>
@@ -108,24 +108,16 @@
 
     <script>
         var socket = io();
-
-        // document.getElementById('filterForm').addEventListener('submit', function(e) {
-        //     const game = document.getElementById('game_filter').value.trim();
-        //     const tags = document.getElementById('tags_filter').value.trim();
-
-        //     if (!game && !tags) {
-        //     e.preventDefault();
-        //     alert('Please enter either a Game name or one or more Tags.');
-        //     }
-        // });
+ 
 
 
         document.getElementById("fetchForm").addEventListener("submit", function(event) {
+            event.preventDefault();
             const game = document.getElementById('game_filter').value.trim();
             const tags = document.getElementById('tags_filter').value.trim();
 
             if (!game && !tags) {
-            e.preventDefault();
+            
             alert('Please enter either a Game name or one or more Tags.');
 
             event.preventDefault();

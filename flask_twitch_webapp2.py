@@ -256,8 +256,9 @@ def fetch_streamers():
                 writer.writerow(["Timestamp", "Streamer", "Viewers", "Language", "Game", "Tags", "First Message Sent",
                                   "First Message Timestamp", "First Reply", "First Reply Timestamp", "Second Message Sent",
                                   "Second Reply", "Second Reply Timestamp", "Socials", "Abandoned", "Timeout"])
-        
-        thread = threading.Thread(target=run_fetch_script, args=(language, max_viewers, log_count, game_filter, output_file))
+        # thread = threading.Thread(target=run_fetch_script, args=(language, tags_list, game_filter, max_viewers, log_count,  output_file))
+
+        thread = threading.Thread(target=run_fetch_script, args=(language, max_viewers, log_count,tags_list, game_filter, output_file))
         thread.start()
         return jsonify({"message": "Fetching started...", "output_file": output_file})
     

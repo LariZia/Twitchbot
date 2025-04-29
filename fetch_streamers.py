@@ -146,12 +146,13 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
                     socketio.emit("log_update", {"log":f"in if streame games {game_name}, {game_filter}"})
 
                     if game_name.lower() in game_filter.lower():
+                        socketio.emit("log_update", {"log": "game filter if: "+game_name.lower() in game_filter.lower()})
                         filtered_streams.append(stream)
                         # logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
                         
                 elif tags:
                     stream_tags = stream.get("tags") or []
-                    socketio.emit("log_update", {"log": f"in if streame tags {stream_tags}, tags input {tags}"})
+                    # socketio.emit("log_update", {"log": f"in if streame tags {stream_tags}, tags input {tags}"})
 
                     if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
                         socketio.emit("log_update", {"log":f"conidition --> {any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags)}"})

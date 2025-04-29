@@ -133,42 +133,81 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
         page_cursor = data.get("pagination", {}).get("cursor")
 
         filtered_streams = []
-        for stream in streams:
-            if (stream["viewer_count"] < max_viewers and stream.get("language") == language):
-                socketio.emit("log_update", {"log": f"in if stream, game filter = {game_filter}, tags = {tags}"})
-            #     continue
-            # if language and stream.get("language") != language:
-            #     continue
-            # game filter takes priority over tags
-                if game_filter:
+        # for stream in streams:
+        #     if (stream["viewer_count"] < max_viewers and stream.get("language") == language):
+        #         socketio.emit("log_update", {"log": f"in if stream, game filter = {game_filter}, tags = {tags}"})
+        #     #     continue
+        #     # if language and stream.get("language") != language:
+        #     #     continue
+        #     # game filter takes priority over tags
+        #         if game_filter:
 
-                    game_name = stream.get("game_name").strip()
-                    socketio.emit("log_update", {"log":f"in if stream games {game_name}, {game_filter}"})
+        #             game_name = stream.get("game_name").strip()
+        #             socketio.emit("log_update", {"log":f"in if stream games {game_name}, {game_filter}"})
 
-                    if game_name.lower() in game_filter.lower():
-                        socketio.emit("log_update", {"log": "game filter if: "+game_name.lower() in game_filter.lower()})
-                        filtered_streams.append(stream)
-                        logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
+        #             if game_name.lower() in game_filter.lower():
+        #                 socketio.emit("log_update", {"log": "game filter if: "+game_name.lower() in game_filter.lower()})
+        #                 filtered_streams.append(stream)
+        #                 logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
                         
-                elif tags:
-                    stream_tags = stream.get("tags") or []
-                    socketio.emit("log_update", {"log": f"in if stream tags {stream_tags}, tags input {tags}"})
+        #         elif tags:
+        #             stream_tags = stream.get("tags") or []
+        #             socketio.emit("log_update", {"log": f"in if stream tags {stream_tags}, tags input {tags}"})
 
-                    if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
-                        socketio.emit("log_update", {"log":f"conidition --> {any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags)}"})
-                        filtered_streams.append(stream)
-                    else: 
-                        continue
-                else:
-                    continue  
-            else:
-                continue
+        #             if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
+        #                 socketio.emit("log_update", {"log":f"conidition --> {any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags)}"})
+        #                 filtered_streams.append(stream)
+        #             else: 
+        #                 continue
+        #         else:
+        #             continue  
+        #     else:
+        #         continue
             # if tags:
             #     stream_tags = stream.get("tags", []) or []
             #     if not all(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
             #         continue
             
             # filtered_streams.append(stream)
+
+        for stream in streams:
+            # 1) language & viewer-count filter
+            if stream["viewer_count"] >= max_viewers or stream.get("language") != language:
+                continue
+        
+            game_name = stream.get("game_name", "")
+        
+            # 2) game-name filter (if given)
+            if game_filter:
+                # if the filter text isn't in the actual game name, skip it
+                if game_filter.lower() not in game_name.lower():
+                    continue
+        
+            # 3) otherwise, if no game_filter but tags are given, apply tags filter
+            elif tags:
+                stream_tags = [t.lower() for t in stream.get("tags", [])]
+                if not any(tag.lower() in stream_tags for tag in tags):
+                    continue
+        
+            # 4) at this point, the stream has passed *all* filters
+            filtered_streams.append(stream)
+        
+            # 5) now do your CSV logging / below_threshold_count logic
+            # if below_threshold_count < log_count:
+            #     # … your CSV writer here …
+            #     below_threshold_count += 1
+            #     log_message = (
+            #         f"Logged: {stream['user_name']} - "
+            #         f"{stream['viewer_count']} viewers - "
+            #         f"{game_name} - tags {stream.get('tags', [])}"
+            #     )
+            #     logging.info(log_message)
+            #     socketio.emit("log_update", {"log": log_message})
+        
+            #     if below_threshold_count >= log_count:
+            #         socketio.emit("fetch_complete", {"log": "Fetching complete!"})
+            #         break
+
             if below_threshold_count < log_count:
                 try:
                     CSV_HEADERS = [
@@ -221,11 +260,11 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
                     socketio.emit("error_logging", {'log': log_message})
 
                 
-                if below_threshold_count >= log_count:
-                    log_message = f"Logged details of {log_count} streamers below {max_viewers} viewers."
-                    logging.info(log_message)
-                    socketio.emit("fetch_complete", {"log": "Fetching complete!"})
-                    break
+                # if below_threshold_count >= log_count:
+                #     log_message = f"Logged details of {log_count} streamers below {max_viewers} viewers."
+                #     logging.info(log_message)
+                #     socketio.emit("fetch_complete", {"log": "Fetching complete!"})
+                #     break
 
     
 

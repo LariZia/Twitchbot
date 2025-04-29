@@ -135,7 +135,7 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
         filtered_streams = []
         for stream in streams:
             if (stream["viewer_count"] < max_viewers and stream.get("language") == language):
-                # socketio.emit("log_update", {"log": f"in if streame, game filter = {game_filter}, tags = {tags}"})
+                socketio.emit("log_update", {"log": f"in if stream, game filter = {game_filter}, tags = {tags}"})
             #     continue
             # if language and stream.get("language") != language:
             #     continue
@@ -143,19 +143,19 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
                 if game_filter:
 
                     game_name = stream.get("game_name").strip()
-                    # socketio.emit("log_update", {"log":f"in if streame games {game_name}, {game_filter}"})
+                    socketio.emit("log_update", {"log":f"in if stream games {game_name}, {game_filter}"})
 
                     if game_name.lower() in game_filter.lower():
-                        # socketio.emit("log_update", {"log": "game filter if: "+game_name.lower() in game_filter.lower()})
+                        socketio.emit("log_update", {"log": "game filter if: "+game_name.lower() in game_filter.lower()})
                         filtered_streams.append(stream)
-                        # logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
+                        logging.debug(f"Skipping {stream['user_name']} - game '{game_name}' doesn't match filter '{game_filter}'")
                         
                 elif tags:
                     stream_tags = stream.get("tags") or []
-                    # socketio.emit("log_update", {"log": f"in if streame tags {stream_tags}, tags input {tags}"})
+                    socketio.emit("log_update", {"log": f"in if stream tags {stream_tags}, tags input {tags}"})
 
                     if any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags):
-                        # socketio.emit("log_update", {"log":f"conidition --> {any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags)}"})
+                        socketio.emit("log_update", {"log":f"conidition --> {any(tag.lower() in [t.lower() for t in stream_tags] for tag in tags)}"})
                         filtered_streams.append(stream)
                     else: 
                         continue

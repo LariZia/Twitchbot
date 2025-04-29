@@ -179,6 +179,7 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
         
             # 2) game-name filter (if given)
             if game_filter:
+                socketio.emit("log_update", {"log": f"game filter: {game_name.lower()}, {game_filter.lower()}"})
                 # if the filter text isn't in the actual game name, skip it
                 if game_filter.lower() not in game_name.lower():
                     continue
@@ -186,6 +187,8 @@ def fetch_streamers(language='en', tags=None,game_filter=None, max_viewers=50, l
             # 3) otherwise, if no game_filter but tags are given, apply tags filter
             elif tags:
                 stream_tags = [t.lower() for t in stream.get("tags", [])]
+                socketio.emit("log_update", {"log": f"tag filter if: {stream_tags.lower()} in {tags.lower()}"})
+
                 if not any(tag.lower() in stream_tags for tag in tags):
                     continue
         

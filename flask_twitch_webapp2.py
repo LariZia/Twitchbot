@@ -310,7 +310,7 @@ def download_csv(filename):
 #     saved_messages = config.get("Bot", "messages", fallback="Hello|Welcome")
 #     return render_template("update_prompts.html", saved_messages=saved_messages)
 
-# bot_process = None  # Global variable to track the bot's process
+bot_process = None  # Global variable to track the bot's process
 @app.route('/update_prompts', methods=["GET", "POST"])
 def update_prompts():
     config = load_config()

@@ -476,3 +476,14 @@ class TwitchBot(commands.Bot):
 #         loop.run_until_complete(bot.run())
 #     else: 
 #         print("Error: Unable to get a valid access token.")
+
+if __name__ == "__main__":
+    # sanity check
+    if not ACCESS_TOKEN:
+        print("Error: No valid access token. Exiting…")
+    else:
+        print("Starting Twitch bot…")
+        socketio.emit("bot_log_update", {"log": "Starting Twitch bot…"})
+        bot = TwitchBot()
+        # This will block and run your event loop
+        bot.run()

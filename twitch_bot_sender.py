@@ -57,14 +57,34 @@ prompt_pairs = list(zip(initial_messages, second_messages))
 # Twitch Helix API endpoint for checking stream status
 TWITCH_HELIX_STREAMS_URL = config.get('Helix', 'api_url').strip()
 
-# CSV file to log the details
-# def get_latest_timestamp():
-#     try:
-#         with open("logs/timestamp.txt", "r") as f:
-#             return f.read().strip()
-#     except FileNotFoundError:
-#         return ""
-    
+def refresh(rt):
+    url  = "https://id.twitch.tv/oauth2/token"
+    data = {
+      "grant_type":"refresh_token",
+      "refresh_token":rt,
+      "client_id":os.environ["TWITCH_CLIENT_ID"],
+      "client_secret":os.environ["TWITCH_CLIENT_SECRET"]
+    }
+    r = requests.post(url,data=data,timeout=10)
+    if not r.ok:
+        print("Token refresh failed:",r.status_code,r.text)
+        return None,None
+    j = r.json()
+    return j["access_token"], j["refresh_token"]
+
+if REFRESH_TOKEN:
+    new_at, new_rt = refresh(REFRESH_TOKEN)
+    if not new_at:
+        raise RuntimeError("Failed to refresh Twitch token – re-auth required.")
+    config["Twitch"]["access_token"]  = new_at
+    config["Twitch"]["refresh_token"] = new_rt
+    with open("CONFIG2.ini","w") as f:
+        config.write(f)
+    ACCESS_TOKEN = new_at
+else:
+    raise RuntimeError("No refresh_token in CONFIG2.ini – do one /act → /callback cycle first")
+
+
 timestamp = get_latest_timestamp()
 LOG_FILE = f"static/streamers_{timestamp}.csv"
 
@@ -480,10 +500,14 @@ class TwitchBot(commands.Bot):
 if __name__ == "__main__":
     # sanity check
     if not ACCESS_TOKEN:
-        print("Error: No valid access token. Exiting…")
+        log_message = "Error: No valid access token. Exiting…"
+        print(log_message)
+        socketio.emit("bot_log_update", {"log": log_message})
+
     else:
-        print("Starting Twitch bot…")
-        socketio.emit("bot_log_update", {"log": "Starting Twitch bot…"})
+        log_message = "Starting Twitch bot…"
+        print(log_message)
+        socketio.emit("bot_log_update", {"log": log_message})
         bot = TwitchBot()
         # This will block and run your event loop
         bot.run()

@@ -95,7 +95,16 @@ CLIENT_SECRET = config.get('Twitch', 'client_secret').strip()
 REDIRECT_URL = config.get('Twitch', 'redirect_uri').strip()
 MESSAGES = config.get('Bot', 'messages', fallback="Hello|Welcome").split('|')
 
-twitch_auth_url = (
+
+
+
+@app.route('/')
+def home():
+    return render_template("index.html")
+
+@app.route('/act')
+def act():
+    twitch_auth_url = (
     f"https://id.twitch.tv/oauth2/authorize"
     f"?response_type=code"
     f"&client_id={CLIENT_ID}"
@@ -104,11 +113,7 @@ twitch_auth_url = (
     f"&state=random_state_value"
     )
 
-
-@app.route('/')
-def home():
-    return render_template("index.html")
-
+    return redirect(twitch_auth_url)
 
 @app.route("/callback")
 def callback():
@@ -350,14 +355,33 @@ def update_prompts():
         prompt_pairs=          prompt_pairs
     )
 
+# @app.route('/run_bot', methods=["POST"])
+# def run_bot():
+#     global bot_process
+#     if bot_process is not None and bot_process.poll() is None:
+#         return jsonify({"message": "Bot is already running."})
+#     # Start a new process running twitch_bot_sender.py
+#     bot_process = subprocess.Popen(["python", "twitch_bot_sender.py"])
+#     return jsonify({"message": "Twitch bot started!"})
+
+
 @app.route('/run_bot', methods=["POST"])
 def run_bot():
     global bot_process
+
+    # 1) refresh token from disk
+    new_token = refresh_access_token()
+    if not new_token:
+        return jsonify({
+            "error":"Could not refresh token; please re-authenticate once."
+        }), 500
+
+    # 2) only now start the bot
     if bot_process is not None and bot_process.poll() is None:
         return jsonify({"message": "Bot is already running."})
-    # Start a new process running twitch_bot_sender.py
     bot_process = subprocess.Popen(["python", "twitch_bot_sender.py"])
     return jsonify({"message": "Twitch bot started!"})
+
 
 @app.route('/stop_bot', methods=["POST"])
 def stop_bot():
@@ -397,6 +421,6 @@ def bot_logs():
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5000))  # Use Railway's PORT or default to 5000
-    socketio.run(app, debug=True, host="0.0.0.0", port=port)
+    socketio.run(app, debug=False, host="0.0.0.0", port=port)
 
     # socketio.run(app, debug=True, use_reloader=False, host="0.0.0.0", port=5000)

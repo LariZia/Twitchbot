@@ -23,6 +23,7 @@
             {% endfor %}
         </ul>
     </div>
+    
     </div>
 
     <script>
@@ -55,5 +56,32 @@
             .catch(err => console.error("Error stopping bot:", err));
         });
     </script>
+    
+
+    <button id="fetchTokenBtn">Fetch Token</button>
+
+    <script>
+    document.getElementById("fetchTokenBtn")
+        .addEventListener("click", () => {
+        fetch("/act")                   // this returns a 302 → Twitch OAuth
+            .then(r => {
+            // once Twitch redirects back to /callback, you'll see the HTML
+            // its text() includes “Authorization successful!”
+            return r.text();
+            })
+            .then(body => {
+            if (body.includes("Authorization successful")) {
+                alert("✅ Access token fetched successfully!");
+            } else {
+                alert("❌ Something went wrong fetching the token.");
+            }
+            })
+            .catch(err => {
+            console.error(err);
+            alert("❌ Network error while fetching token.");
+            });
+        });
+    </script>
+
 </body>
 </html>

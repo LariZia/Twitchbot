@@ -397,8 +397,11 @@ def stop_bot():
 def bot_logs():
     existing_files = sorted(os.listdir(DB_FOLDER), reverse=True)
     # determine if the user has already completed OAuth (we're storing the refresh token in session)
-    
-    has_token = bool(REFRESH_TOKEN)
+    parser = configparser.ConfigParser()
+    parser.read("CONFIG2.ini")  # “”
+    refresh = parser.get("Twitch", "refresh_token", fallback="").strip()
+    has_token = bool(refresh)
+
     return render_template(
         "bot_logs.html",
         files=existing_files,

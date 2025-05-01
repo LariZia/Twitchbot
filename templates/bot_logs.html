@@ -14,31 +14,24 @@
     <h2>Twitch Bot Text Sender</h2>
 
     {% if not has_token %}
-      <!-- Step 1: user needs to connect their Twitch account -->
-      <button
-        id="fetchTokenBtn"
-        class="btn btn-primary mb-3"
-      >Connect Twitch Account</button>
+      <a href="{{ url_for('act') }}" class="btn btn-primary mb-3">
+        Connect Twitch Account
+      </a>
     {% else %}
-      <!-- Step 2: user already has tokens -->
-      <button
-        id="startBotBtn"
-        class="btn btn-success me-2 mb-3"
-      >Start Bot</button>
-      <button
-        id="stopBotBtn"
-        class="btn btn-danger mb-3"
-      >Stop Bot</button>
+      <button id="startBotBtn" class="btn btn-success me-2 mb-3">
+        Start Bot
+      </button>
+      <button id="stopBotBtn" class="btn btn-danger mb-3">
+        Stop Bot
+      </button>
     {% endif %}
 
-    <!-- Log output -->
     <div
       id="botLogs"
       class="mt-4 p-3 bg-light border"
       style="height: 400px; overflow-y: auto;"
     ></div>
 
-    <!-- List of existing CSV files -->
     <h2 class="mt-4">Existing Files:</h2>
     <ul>
       {% for file in files %}
@@ -52,50 +45,27 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // 1) Socket.IO listener
-      const socket = io();
-      const logContainer = document.getElementById("botLogs");
-      socket.on("bot_log_update", data => {
-        logContainer.innerHTML += `<p>${data.log}</p>`;
-        logContainer.scrollTop = logContainer.scrollHeight;
-      });
-
-      // 2) Helper to POST and alert on message/error
-      function doRequest(path) {
-        fetch(path, { method: "POST" })
-          .then(res => res.json())
-          .then(data => {
-            if (data.error)   alert("Error: " + data.error);
-            else if (data.message) alert(data.message);
-            else alert("Unexpected response from server.");
-          })
-          .catch(err => {
-            console.error("Request failed:", err);
-            alert("Network error");
-          });
-      }
-
-      // 3) Wire up Start/Stop buttons (if present)
-      const startBtn = document.getElementById("startBotBtn");
-      if (startBtn) {
-        startBtn.addEventListener("click", () => doRequest("/run_bot"));
-      }
-
-      const stopBtn = document.getElementById("stopBotBtn");
-      if (stopBtn) {
-        stopBtn.addEventListener("click", () => doRequest("/stop_bot"));
-      }
-
-      // 4) Wire up OAuth “Connect” button (if present)
-      const fetchBtn = document.getElementById("fetchTokenBtn");
-      if (fetchBtn) {
-        fetchBtn.addEventListener("click", () => {
-          // redirect the browser into your /act → Twitch flow
-          window.location.href = "/act";
-        });
-      }
+    // only socket & Start/Stop wiring now
+    const socket = io();
+    const logContainer = document.getElementById("botLogs");
+    socket.on("bot_log_update", data => {
+      logContainer.innerHTML += `<p>${data.log}</p>`;
+      logContainer.scrollTop = logContainer.scrollHeight;
     });
+
+    function doRequest(path) {
+      fetch(path, { method: "POST" })
+        .then(r => r.json())
+        .then(d => {
+          if (d.error)   alert("Error: " + d.error);
+          else if (d.message) alert(d.message);
+          else alert("Unexpected server response");
+        })
+        .catch(() => alert("Network error"));
+    }
+
+    document.getElementById("startBotBtn")?.addEventListener("click", () => doRequest("/run_bot"));
+    document.getElementById("stopBotBtn")?.addEventListener("click", () => doRequest("/stop_bot"));
   </script>
 </body>
 </html>

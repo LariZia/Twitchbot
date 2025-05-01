@@ -123,14 +123,31 @@ def callback():
     if not code:
         return "Error: No code received from Twitch.", 400
 
-    print(f"Received code: {code}")
+    # print(f"Received code: {code}")
 
-    # Exchange the code for a new access token
+    # # Exchange the code for a new access token
+    # new_access_token = get_user_access_token(CLIENT_ID, CLIENT_SECRET, code)
+    # if new_access_token:
+    #     return "Authorization successful! You can now close this tab."
+    # elif not new_access_token:
+    #     return "Failed to retrieve access token.", 500
+    # else:
+    #     return  redirect(url_for("bot_logs"))
+
+
+    # exchange code for tokens and save into CONFIG2.ini
     new_access_token = get_user_access_token(CLIENT_ID, CLIENT_SECRET, code)
-    if new_access_token:
-        return "Authorization successful! You can now close this tab."
-    else:
+    if not new_access_token:
         return "Failed to retrieve access token.", 500
+
+    # reload your module-level config and globals so bot_logs() sees the new refresh_token
+    global config, ACCESS_TOKEN, REFRESH_TOKEN
+    config         = load_config()
+    ACCESS_TOKEN   = config.get("Twitch", "access_token").strip()
+    REFRESH_TOKEN  = config.get("Twitch", "refresh_token").strip()
+
+    # finally, send the user right back to /bot_logs
+    return redirect(url_for("bot_logs"))
 
 def get_user_access_token(client_id, client_secret, code):
     """Exchange the authorization code for an access token."""

@@ -113,7 +113,7 @@ def act():
     f"&state=random_state_value"
     )
 
-    return redirect(twitch_auth_url)
+    return redirect(twitch_auth_url, code=302)
 
 @app.route("/callback")
 def callback():
@@ -395,9 +395,15 @@ def stop_bot():
 
 @app.route('/bot_logs')
 def bot_logs():
-    
     existing_files = sorted(os.listdir(DB_FOLDER), reverse=True)
-    return render_template("bot_logs.html", files=existing_files)
+    # determine if the user has already completed OAuth (we're storing the refresh token in session)
+    
+    has_token = bool(REFRESH_TOKEN)
+    return render_template(
+        "bot_logs.html",
+        files=existing_files,
+        has_token=has_token
+    )
 
 # @app.route('/start_bot', methods=["POST"])
 # def start_bot():

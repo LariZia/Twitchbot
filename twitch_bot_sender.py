@@ -68,6 +68,9 @@ TWITCH_HELIX_STREAMS_URL = config.get('Helix', 'api_url').strip()
 timestamp = get_latest_timestamp()
 LOG_FILE = f"static/streamers_{timestamp}.csv"
 
+socketio.emit("bot_log_update", {"log": f"Reading file {LOG_FILE}"})
+
+
 # Configure logging
 logging.basicConfig(
     filename=f"logs/streamers_debug_{timestamp}.log",
@@ -89,10 +92,16 @@ def read_channel_names_from_csv(csv_file_path):
                 if row:  # Ensure the row is not empty
                     channel_names.append(row[1])  #  channel names are in the second column
     except FileNotFoundError:
-        print(f"CSV file not found at {csv_file_path}")
+        log_message = f"CSV file not found at {csv_file_path}"
+        print(log_message)
+        socketio.emit("bot_log_update", {"log": log_message})
+
 
     except Exception as e:
-        print(f"Error reading CSV file: {e}")
+        log_message = f"Error reading CSV file: {e}"
+        print(log_message)
+        socketio.emit("bot_log_update", {"log": log_message})
+
     return channel_names
 
 # Read channel names from the CSV file
@@ -227,11 +236,14 @@ class TwitchBot(commands.Bot):
             print("Error: No valid access token. Attempting refresh...")
             log_message = f"Error: No valid access token. Attempting refresh..."
             logging.error(log_message)
+            socketio.emit("bot_log_update", {"log": log_message})
+
             ACCESS_TOKEN = refresh_access_token()
             if not ACCESS_TOKEN:
                 print("Error: Could not refresh token. Exiting...")
                 log_message = f"Error: Could not refresh token. Exiting..."
                 logging.info(log_message)
+                socketio.emit("bot_log_update", {"log": log_message})
                 return
 
         super().__init__(token=f'oauth:{ACCESS_TOKEN}', prefix='!', initial_channels=CHANNELS)
@@ -241,6 +253,8 @@ class TwitchBot(commands.Bot):
     async def event_ready(self):
         """Called when the bot successfully logs in."""
         print(f"Logged in as | {self.nick}")
+        socketio.emit("bot_log_update", {"log": f"Logged in as | {self.nick}"})
+
         self.loop.create_task(self.send_initial_messages())
         self.loop.create_task(self.monitor_stream_status())  # Start monitoring stream status
 
@@ -250,9 +264,9 @@ class TwitchBot(commands.Bot):
             # Check if the stream is live before sending a message
             is_live = await self._check_stream_status(channel_name)
             if not is_live:
-                print(f"Stream is offline for {channel_name}. Skipping message.")
                 # Emit log update
                 log_message = f"Stream is offline for {channel_name}. Skipping message."
+                print(log_message)
                 logging.info(log_message)
                 socketio.emit("bot_log_update", {"log": log_message})
                 continue  # Skip sending a message if the stream is offline

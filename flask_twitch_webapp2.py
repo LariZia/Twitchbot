@@ -29,31 +29,31 @@ if not os.path.exists(DB_FOLDER):
 
 
 # Initialize database
-def init_db():
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS streamers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            viewers INTEGER,
-            language TEXT,
-            timestamp TEXT,
-            first_message_sent TEXT,
-            first_message_timestamp TEXT,
-            first_reply TEXT,
-            first_reply_timestamp TEXT,
-            second_message_sent TEXT,
-            second_reply TEXT,
-            second_reply_timestamp TEXT,
-            socials TEXT,
-            abandoned TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+# def init_db():
+#     conn = sqlite3.connect(DB_FILE)
+#     cursor = conn.cursor()
+#     cursor.execute('''
+#         CREATE TABLE IF NOT EXISTS streamers (
+#             id INTEGER PRIMARY KEY AUTOINCREMENT,
+#             name TEXT,
+#             viewers INTEGER,
+#             language TEXT,
+#             timestamp TEXT,
+#             first_message_sent TEXT,
+#             first_message_timestamp TEXT,
+#             first_reply TEXT,
+#             first_reply_timestamp TEXT,
+#             second_message_sent TEXT,
+#             second_reply TEXT,
+#             second_reply_timestamp TEXT,
+#             socials TEXT,
+#             abandoned TEXT
+#         )
+#     ''')
+#     conn.commit()
+#     conn.close()
 
-init_db()
+# init_db()
 
 # Load configuration
 def load_config():
@@ -145,6 +145,16 @@ def callback():
     config         = load_config()
     ACCESS_TOKEN   = config.get("Twitch", "access_token").strip()
     REFRESH_TOKEN  = config.get("Twitch", "refresh_token").strip()
+    # --- start the Twitch bot immediately ---
+    global bot_process
+    # only start if it’s not already running
+    if bot_process is None or bot_process.poll() is not None:
+        bot_process = subprocess.Popen(
+            ["python", "twitch_bot_sender.py"],
+            stdout=subprocess.STDOUT,
+            stderr=subprocess.STDOUT
+        )
+    # ----------------------------------------
 
     # finally, send the user right back to /bot_logs
     return redirect(url_for("bot_logs"))

@@ -188,12 +188,18 @@ def act():
 #     return redirect(url_for("bot_logs"))
 
 
-@app.route("/callback")
+@app.route("/callback", strict_slashes=False)
 def callback():
     code = request.args.get("code")
+    error = request.args.get("error")
+
+    if error:
+        return f"Error from Twitch: {error}", 400
+
     if not code:
         return "Error: No code received from Twitch.", 400
 
+    # Exchange for tokens
     if not get_user_access_token(CLIENT_ID, CLIENT_SECRET, code):
         return "Failed to retrieve access token.", 500
 

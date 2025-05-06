@@ -78,7 +78,10 @@
     document.getElementById("startBotBtn")?.addEventListener("click", () => doRequest("/run_bot"));
     document.getElementById("stopBotBtn")?.addEventListener("click", () => doRequest("/stop_bot"));
   </script> -->
-  <script src="https://cdn.jsdelivr.net/npm/socket.io@4.0.1/dist/socket.io.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/socket.io@4.0.1/dist/socket.io.min.js"></script> -->
+  
+  <script src="/socket.io/socket.io.js"></script>
+
   <script>
 
     document.getElementById("connectBtn")?.addEventListener("click", () => {

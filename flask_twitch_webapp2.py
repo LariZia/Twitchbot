@@ -118,8 +118,10 @@ def home():
 
 @app.route('/act')
 def act():
+    
     # build a redirect_uri that always points at your app's /callback
     redirect_uri = url_for('callback', _external=True)
+    print("→ Using redirect_uri:", redirect_uri)
 
     twitch_auth_url = (
         f"https://id.twitch.tv/oauth2/authorize"
@@ -203,7 +205,9 @@ def callback():
 
 
 def get_user_access_token(client_id, client_secret, code):
+
     """Exchange the authorization code for an access token."""
+    REDIRECT_URL = url_for('callback', _external=True)
     url = "https://id.twitch.tv/oauth2/token"
     data = {
         "client_id": client_id,

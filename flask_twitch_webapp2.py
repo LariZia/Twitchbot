@@ -208,12 +208,12 @@ def callback():
     config        = load_config()
     ACCESS_TOKEN  = config.get("Twitch", "access_token").strip()
     REFRESH_TOKEN = config.get("Twitch", "refresh_token").strip()
-    if bot_process is None or bot_process.poll() is not None:
-        bot_process = subprocess.Popen(
-            ["python", "twitch_bot_sender.py"],
-            stdout=subprocess.STDOUT,
-            stderr=subprocess.STDOUT
-        )
+    # if bot_process is None or bot_process.poll() is not None:
+    #     bot_process = subprocess.Popen(
+    #         ["python", "twitch_bot_sender.py"],
+    #         stdout=subprocess.STDOUT,
+    #         stderr=subprocess.STDOUT
+    #     )
 
     # instead of redirect, show the JS‐powered closer page
     return render_template("oauth_complete.html")

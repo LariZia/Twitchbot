@@ -45,7 +45,7 @@
     </ul>
   </div>
 
-  <script>
+  <!-- <script>
 
     // --- Open the OAuth flow in a popup ---
     document.getElementById("connectBtn")?.addEventListener("click", () => {
@@ -55,7 +55,7 @@
         "width=600,height=700"
       );
     });
-    
+
     // only socket & Start/Stop wiring now
     const socket = io();
     const logContainer = document.getElementById("botLogs");
@@ -77,6 +77,42 @@
 
     document.getElementById("startBotBtn")?.addEventListener("click", () => doRequest("/run_bot"));
     document.getElementById("stopBotBtn")?.addEventListener("click", () => doRequest("/stop_bot"));
+  </script> -->
+
+  <script>
+    // Log all socket events
+    const socket = io();
+    socket.on("connect", () => console.log("🔌 Socket connected"));
+    socket.on("bot_log_update", data => {
+      console.log("📥 Log update:", data.log);
+      const p = document.createElement("p");
+      p.textContent = data.log;
+      document.getElementById("botLogs").appendChild(p);
+      document.getElementById("botLogs").scrollTop = document.getElementById("botLogs").scrollHeight;
+    });
+  
+    function doRequest(path) {
+      console.log("⏭️ Fetching", path);
+      fetch(path, { method: "POST" })
+        .then(r => {
+          console.log("⏪ Response status", r.status);
+          return r.json();
+        })
+        .then(d => {
+          console.log("⏪ Response JSON", d);
+          if (d.error)   return alert("Error: " + d.error);
+          if (d.message) return alert(d.message);
+          alert("Unexpected server response");
+        })
+        .catch(err => {
+          console.error("❌ Network error", err);
+          alert("Network error");
+        });
+    }
+  
+    document.getElementById("startBotBtn")?.addEventListener("click", () => doRequest("/run_bot"));
+    document.getElementById("stopBotBtn")?.addEventListener("click", () => doRequest("/stop_bot"));
   </script>
+  
 </body>
 </html>

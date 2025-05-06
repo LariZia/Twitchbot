@@ -62,8 +62,8 @@ def refresh(rt):
     data = {
       "grant_type":"refresh_token",
       "refresh_token":rt,
-      "client_id":os.environ["TWITCH_CLIENT_ID"],
-      "client_secret":os.environ["TWITCH_CLIENT_SECRET"]
+      "client_id":CLIENT_ID,
+      "client_secret":CLIENT_SECRET
     }
     r = requests.post(url,data=data,timeout=10)
     if not r.ok:

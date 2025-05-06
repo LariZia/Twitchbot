@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Authorization Complete</title>
+</head>
+<body>
+  <p>Authorization successful! You can close this window.</p>
+  <script>
+    if (window.opener) {
+      // You can either reload the opener...
+    //   window.opener.location.reload();
+      // ...or send it explicitly to /bot_logs:
+      window.opener.location.href = "{{ url_for('bot_logs') }}";
+    }
+    window.close();
+  </script>
+</body>
+</html>

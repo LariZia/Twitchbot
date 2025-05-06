@@ -14,9 +14,10 @@
     <h2>Twitch Bot Text Sender</h2>
 
     {% if not has_token %}
-      <a href="{{ url_for('act') }}" class="btn btn-primary mb-3">
+      <!-- Popup‐opening button instead of plain link -->
+      <button id="connectBtn" class="btn btn-primary mb-3">
         Connect Twitch Account
-      </a>
+      </button>
     {% else %}
       <button id="startBotBtn" class="btn btn-success me-2 mb-3">
         Start Bot
@@ -45,6 +46,16 @@
   </div>
 
   <script>
+
+    // --- Open the OAuth flow in a popup ---
+    document.getElementById("connectBtn")?.addEventListener("click", () => {
+      window.authWindow = window.open(
+        "{{ url_for('act') }}",
+        "TwitchAuth",
+        "width=600,height=700"
+      );
+    });
+    
     // only socket & Start/Stop wiring now
     const socket = io();
     const logContainer = document.getElementById("botLogs");

@@ -73,17 +73,17 @@ def save_config(new_config):
         config.write(configfile)
 
 # Fetch streamers from the database
-def get_streamers(from_date, to_date):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT name, viewers, language, timestamp, first_message_sent, first_message_timestamp, 
-               first_reply, first_reply_timestamp, second_message_sent, second_reply, 
-               second_reply_timestamp, socials, abandoned 
-        FROM streamers WHERE timestamp BETWEEN ? AND ?""", (from_date, to_date))
-    results = cursor.fetchall()
-    conn.close()
-    return results
+# def get_streamers(from_date, to_date):
+#     conn = sqlite3.connect(DB_FILE)
+#     cursor = conn.cursor()
+#     cursor.execute("""
+#         SELECT name, viewers, language, timestamp, first_message_sent, first_message_timestamp, 
+#                first_reply, first_reply_timestamp, second_message_sent, second_reply, 
+#                second_reply_timestamp, socials, abandoned 
+#         FROM streamers WHERE timestamp BETWEEN ? AND ?""", (from_date, to_date))
+#     results = cursor.fetchall()
+#     conn.close()
+#     return results
 
 
 config = load_config()
@@ -115,49 +115,76 @@ def act():
 
     return redirect(twitch_auth_url, code=302)
 
+# @app.route("/callback")
+# def callback():
+#     """Handle the callback from Twitch and retrieve the authorization code."""
+#     code = request.args.get("code")
+
+#     if not code:
+#         return "Error: No code received from Twitch.", 400
+
+#     # print(f"Received code: {code}")
+
+#     # # Exchange the code for a new access token
+#     # new_access_token = get_user_access_token(CLIENT_ID, CLIENT_SECRET, code)
+#     # if new_access_token:
+#     #     return "Authorization successful! You can now close this tab."
+#     # elif not new_access_token:
+#     #     return "Failed to retrieve access token.", 500
+#     # else:
+#     #     return  redirect(url_for("bot_logs"))
+
+
+#     # exchange code for tokens and save into CONFIG2.ini
+#     new_access_token = get_user_access_token(CLIENT_ID, CLIENT_SECRET, code)
+#     if not new_access_token:
+#         return "Failed to retrieve access token.", 500
+
+#     # reload your module-level config and globals so bot_logs() sees the new refresh_token
+#     global config, ACCESS_TOKEN, REFRESH_TOKEN
+#     config         = load_config()
+#     ACCESS_TOKEN   = config.get("Twitch", "access_token").strip()
+#     REFRESH_TOKEN  = config.get("Twitch", "refresh_token").strip()
+#     # --- start the Twitch bot immediately ---
+#     global bot_process
+#     # only start if it’s not already running
+#     if bot_process is None or bot_process.poll() is not None:
+#         bot_process = subprocess.Popen(
+#             ["python", "twitch_bot_sender.py"],
+#             stdout=subprocess.STDOUT,
+#             stderr=subprocess.STDOUT
+#         )
+#     # ----------------------------------------
+
+#     # finally, send the user right back to /bot_logs
+#     return redirect(url_for("bot_logs"))
+
+
 @app.route("/callback")
 def callback():
-    """Handle the callback from Twitch and retrieve the authorization code."""
     code = request.args.get("code")
-
     if not code:
         return "Error: No code received from Twitch.", 400
 
-    # print(f"Received code: {code}")
-
-    # # Exchange the code for a new access token
-    # new_access_token = get_user_access_token(CLIENT_ID, CLIENT_SECRET, code)
-    # if new_access_token:
-    #     return "Authorization successful! You can now close this tab."
-    # elif not new_access_token:
-    #     return "Failed to retrieve access token.", 500
-    # else:
-    #     return  redirect(url_for("bot_logs"))
-
-
-    # exchange code for tokens and save into CONFIG2.ini
-    new_access_token = get_user_access_token(CLIENT_ID, CLIENT_SECRET, code)
-    if not new_access_token:
+    if not get_user_access_token(CLIENT_ID, CLIENT_SECRET, code):
         return "Failed to retrieve access token.", 500
 
-    # reload your module-level config and globals so bot_logs() sees the new refresh_token
-    global config, ACCESS_TOKEN, REFRESH_TOKEN
-    config         = load_config()
-    ACCESS_TOKEN   = config.get("Twitch", "access_token").strip()
-    REFRESH_TOKEN  = config.get("Twitch", "refresh_token").strip()
-    # --- start the Twitch bot immediately ---
-    global bot_process
-    # only start if it’s not already running
+    # reload config and (re)start your bot as before...
+    global config, ACCESS_TOKEN, REFRESH_TOKEN, bot_process
+    config        = load_config()
+    ACCESS_TOKEN  = config.get("Twitch", "access_token").strip()
+    REFRESH_TOKEN = config.get("Twitch", "refresh_token").strip()
     if bot_process is None or bot_process.poll() is not None:
         bot_process = subprocess.Popen(
             ["python", "twitch_bot_sender.py"],
             stdout=subprocess.STDOUT,
             stderr=subprocess.STDOUT
         )
-    # ----------------------------------------
 
-    # finally, send the user right back to /bot_logs
-    return redirect(url_for("bot_logs"))
+    # instead of redirect, show the JS‐powered closer page
+    return render_template("oauth_complete.html")
+
+
 
 def get_user_access_token(client_id, client_secret, code):
     """Exchange the authorization code for an access token."""

@@ -1,17 +1,12 @@
+<!-- templates/oauth_complete.html -->
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Authorization Complete</title>
-</head>
+<html>
+<head><meta charset="utf-8"><title>Auth Complete</title></head>
 <body>
-  <p>Authorization successful! You can close this window.</p>
+  <p>All set! This window will close automatically.</p>
   <script>
     if (window.opener) {
-      // You can either reload the opener...
-    //   window.opener.location.reload();
-      // ...or send it explicitly to /bot_logs:
-      window.opener.location.href = "{{ url_for('bot_logs') }}";
+      window.opener.location.reload();
     }
     window.close();
   </script>

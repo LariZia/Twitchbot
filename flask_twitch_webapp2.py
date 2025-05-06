@@ -102,18 +102,34 @@ MESSAGES = config.get('Bot', 'messages', fallback="Hello|Welcome").split('|')
 def home():
     return render_template("index.html")
 
+# @app.route('/act')
+# def act():
+#     twitch_auth_url = (
+#     f"https://id.twitch.tv/oauth2/authorize"
+#     f"?response_type=code"
+#     f"&client_id={CLIENT_ID}"
+#     f"&redirect_uri={REDIRECT_URL}"
+#     f"&scope=chat:read+chat:edit+channel:moderate"
+#     f"&state=random_state_value"
+#     )
+
+#     return redirect(twitch_auth_url, code=302)
+
+
 @app.route('/act')
 def act():
-    twitch_auth_url = (
-    f"https://id.twitch.tv/oauth2/authorize"
-    f"?response_type=code"
-    f"&client_id={CLIENT_ID}"
-    f"&redirect_uri={REDIRECT_URL}"
-    f"&scope=chat:read+chat:edit+channel:moderate"
-    f"&state=random_state_value"
-    )
+    # build a redirect_uri that always points at your app's /callback
+    redirect_uri = url_for('callback', _external=True)
 
-    return redirect(twitch_auth_url, code=302)
+    twitch_auth_url = (
+        f"https://id.twitch.tv/oauth2/authorize"
+        f"?response_type=code"
+        f"&client_id={CLIENT_ID}"
+        f"&redirect_uri={redirect_uri}"
+        f"&scope=chat:read+chat:edit+channel:moderate"
+        f"&state=random_state_value"
+    )
+    return redirect(twitch_auth_url)
 
 # @app.route("/callback")
 # def callback():

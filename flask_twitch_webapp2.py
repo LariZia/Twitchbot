@@ -348,7 +348,7 @@ def fetch_streamers():
         output_file = os.path.join(DB_FOLDER, f"streamers_{timestamp}.csv")
         # Ensure CSV file has a header
         if not os.path.exists(output_file):
-            with open(output_file, mode="w", newline="") as file:
+            with open(output_file, mode="w", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file)
                 writer.writerow(["Timestamp", "Streamer", "Viewers", "Language", "Game", "Tags", "First Message Sent",
                                   "First Message Timestamp", "First Reply", "First Reply Timestamp", "Second Message Sent",
@@ -377,7 +377,7 @@ def download_db():
     csv_path = os.path.join("temp", csv_filename)
     os.makedirs("temp", exist_ok=True)
     
-    with open(csv_path, "w", newline="") as file:
+    with open(csv_path, "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["Timestamp", "Streamer", "Viewers", "Language", "Game", "Tags", "First Message Sent", "First Message Timestamp", 
                          "First Reply", "First Reply Timestamp", "Second Message Sent", "Second Reply", 

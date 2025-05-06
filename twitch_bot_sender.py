@@ -105,7 +105,7 @@ logging.info("Bot started.")
 def read_channel_names_from_csv(csv_file_path):
     channel_names = []
     try:
-        with open(csv_file_path, mode='r') as file:
+        with open(csv_file_path, mode='r', encoding="utf-8", newline="") as file:
             reader = csv.reader(file)
             next(reader)  # Skip the header row
             for row in reader:

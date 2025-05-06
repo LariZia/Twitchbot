@@ -78,8 +78,16 @@
     document.getElementById("startBotBtn")?.addEventListener("click", () => doRequest("/run_bot"));
     document.getElementById("stopBotBtn")?.addEventListener("click", () => doRequest("/stop_bot"));
   </script> -->
-
+  <script src="https://cdn.jsdelivr.net/npm/socket.io@4.0.1/dist/socket.io.min.js"></script>
   <script>
+
+    document.getElementById("connectBtn")?.addEventListener("click", () => {
+        window.authWindow = window.open(
+          "{{ url_for('act') }}",
+          "TwitchAuth",
+          "width=600,height=700"
+        );
+    });
     // Log all socket events
     const socket = io();
     socket.on("connect", () => console.log("🔌 Socket connected"));
@@ -90,7 +98,8 @@
       document.getElementById("botLogs").appendChild(p);
       document.getElementById("botLogs").scrollTop = document.getElementById("botLogs").scrollHeight;
     });
-  
+    
+
     function doRequest(path) {
       console.log("⏭️ Fetching", path);
       fetch(path, { method: "POST" })

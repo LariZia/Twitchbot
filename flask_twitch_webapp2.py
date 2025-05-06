@@ -1,6 +1,7 @@
 import eventlet
 eventlet.monkey_patch()
 
+import threading
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
 from flask_socketio import SocketIO
 import configparser
@@ -456,22 +457,65 @@ def update_prompts():
 #     return jsonify({"message": "Twitch bot started!"})
 
 
+# @app.route('/run_bot', methods=["POST"])
+# def run_bot():
+#     global bot_process
+
+#     # 1) refresh token from disk
+#     new_token = refresh_access_token()
+#     if not new_token:
+#         return jsonify({
+#             "error":"Could not refresh token; please re-authenticate once."
+#         }), 500
+
+#     # 2) only now start the bot
+#     if bot_process is not None and bot_process.poll() is None:
+#         return jsonify({"message": "Bot is already running."})
+#     bot_process = subprocess.Popen(["python", "twitch_bot_sender.py"])
+#     return jsonify({"message": "Twitch bot started!"})
+
+
+# @app.route('/stop_bot', methods=["POST"])
+# def stop_bot():
+#     global bot_process
+#     if bot_process is not None and bot_process.poll() is None:
+#         bot_process.terminate()
+#         bot_process = None
+#         return jsonify({"message": "Twitch bot has been stopped."})
+#     else:
+#         return jsonify({"message": "Bot is not running."})
+
 @app.route('/run_bot', methods=["POST"])
 def run_bot():
     global bot_process
 
-    # 1) refresh token from disk
+    # Refresh the token first
     new_token = refresh_access_token()
     if not new_token:
-        return jsonify({
-            "error":"Could not refresh token; please re-authenticate once."
-        }), 500
+        return jsonify({"error":"Could not refresh token; please re-authenticate once."}), 500
 
-    # 2) only now start the bot
+    # If already running, short-circuit
     if bot_process is not None and bot_process.poll() is None:
-        return jsonify({"message": "Bot is already running."})
-    bot_process = subprocess.Popen(["python", "twitch_bot_sender.py"])
-    return jsonify({"message": "Twitch bot started!"})
+        return jsonify({"message":"Bot is already running."})
+
+    # Otherwise spawn it in a thread that captures stdout
+    def start_and_stream():
+        global bot_process
+        bot_process = subprocess.Popen(
+            ["python", "twitch_bot_sender.py"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        # Read stdout line by line, emit over Socket.IO
+        for line in bot_process.stdout:
+            socketio.emit("bot_log_update", {"log": line.rstrip()})
+        # When the process exits, optionally let clients know
+        socketio.emit("bot_log_update", {"log": "🚀 Bot process has exited."})
+        bot_process = None
+
+    threading.Thread(target=start_and_stream, daemon=True).start()
+    return jsonify({"message":"Twitch bot started!"})
 
 
 @app.route('/stop_bot', methods=["POST"])
@@ -479,10 +523,8 @@ def stop_bot():
     global bot_process
     if bot_process is not None and bot_process.poll() is None:
         bot_process.terminate()
-        bot_process = None
-        return jsonify({"message": "Twitch bot has been stopped."})
-    else:
-        return jsonify({"message": "Bot is not running."})
+        return jsonify({"message":"Twitch bot has been stopped."})
+    return jsonify({"message":"Bot is not running."})
 
 @app.route('/bot_logs')
 def bot_logs():

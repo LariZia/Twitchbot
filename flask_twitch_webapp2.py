@@ -120,8 +120,18 @@ def home():
 def act():
     
     # build a redirect_uri that always points at your app's /callback
-    redirect_uri = url_for('callback', _external=True)
+    # redirect_uri = url_for('callback', _external=True)
+    redirect_uri = REDIRECT_URL
     print("→ Using redirect_uri:", redirect_uri)
+    # flow for local run website
+    # twitch_auth_url = (
+    #     f"https://id.twitch.tv/oauth2/authorize"
+    #     f"?response_type=code"
+    #     f"&client_id={CLIENT_ID}"
+    #     f"&redirect_uri={redirect_uri}"
+    #     f"&scope=chat:read+chat:edit+channel:moderate"
+    #     f"&state=random_state_value"
+    # )
 
     twitch_auth_url = (
         f"https://id.twitch.tv/oauth2/authorize"
@@ -129,7 +139,7 @@ def act():
         f"&client_id={CLIENT_ID}"
         f"&redirect_uri={redirect_uri}"
         f"&scope=chat:read+chat:edit+channel:moderate"
-        f"&state=random_state_value"
+        f"&state=c3ab8aa609ea11e793ae92361f002671"
     )
     return redirect(twitch_auth_url)
 
@@ -207,14 +217,15 @@ def callback():
 def get_user_access_token(client_id, client_secret, code):
 
     """Exchange the authorization code for an access token."""
-    REDIRECT_URL = url_for('callback', _external=True)
+    # REDIRECT_URL = url_for('callback', _external=True)
     url = "https://id.twitch.tv/oauth2/token"
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
+        "code": code,
         "grant_type": "authorization_code",
         "redirect_uri": REDIRECT_URL,
-        "code": code,
+        
     }
 
     response = requests.post(url, data=data)

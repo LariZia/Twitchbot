@@ -498,6 +498,14 @@ class TwitchBot(commands.Bot):
 #         print("Error: Unable to get a valid access token.")
 
 if __name__ == "__main__":
+    import asyncio
+
+    # 1) Create a fresh event loop…
+    loop = asyncio.new_event_loop()
+    # 2) …and make it the “current” one on this thread
+    asyncio.set_event_loop(loop)
+
+    # Now TwitchIO’s Bot() and bot.run() will see a valid loop
     # sanity check
     if not ACCESS_TOKEN:
         log_message = "Error: No valid access token. Exiting…"

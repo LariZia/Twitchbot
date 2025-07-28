@@ -188,7 +188,7 @@ def act():
 #     # finally, send the user right back to /bot_logs
 #     return redirect(url_for("bot_logs"))
 
-
+@app.route("/callback/")
 @app.route("/callback", strict_slashes=False)
 def callback():
     code = request.args.get("code")
